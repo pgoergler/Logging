@@ -2,7 +2,7 @@ Logging
 =======
 
 Logger for PHP (PSR-3)
-Each lines of a debug are prefixed. So it's easy to "__grep__" to extract specific lines.
+Each lines of a debug are prefixed. So it's easy to "grep" to extract specific lines.
 
 
 Usage

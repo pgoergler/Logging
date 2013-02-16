@@ -55,7 +55,7 @@ This will output:
 LoggersManager
 -----
 
-It a container of Loggers
+It's a container of Loggers
 
 ```php
     $configuration = array(
@@ -95,7 +95,7 @@ It a container of Loggers
     \Logging\LoggersManager::get('root')->emergency("I'm using logger named root");
     \Logging\LoggersManager::get('cli')->emergency("I'm using logger named cli");
     \Logging\LoggersManager::get('stdout')->emergency("I'm using logger named stdout");
-    \Logging\LoggersManager::get(')->emergency("By default i'm using logger named root");
+    \Logging\LoggersManager::get()->emergency("By default i'm using logger named root");
 
     $appender = new \Logging\Appenders\CliAppender('my-appender', 'DEBUG,NOTICE,INFO,WARNING,ERROR,ALERT,CRITICAL,EMERGENCY', $prefix);
     $logger = new \Logging\Logger('new-root-logger', array($appender));

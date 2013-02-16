@@ -50,6 +50,59 @@ This will output:
 [2013-02-16 15:41:48,144][test 2][    DEBUG][TestTask.php][testLogging@52][30575][paul@localhost][xterm-color]line 1
 [2013-02-16 15:41:48,144][test 2][    DEBUG][TestTask.php][testLogging@52][30575][paul@localhost][xterm-color]line 2
 
+```
 
+LoggerManager
+-----
 
+It a container of Loggers
+
+```php
+    $configuration = array(
+        'loggers' => array(
+            'root' => array(
+                'appenders' => array('file', 'stdout', 'cli'),
+            ),
+            'stdout' => array(
+                'appenders' => array('stdout'),
+            ),
+            'cli' => array(
+                'appenders' => array('cli'),
+            ),
+        ),
+        'appenders' => array(
+            'stdout' => array(
+                'class' => '\Logging\Appenders\EchoAppender',
+                'levels' => 'ERROR,CRITICAL,ALERT,EMERGENCY',
+                'prefix' => '[%datetime%][%level%][%file%][%function%@%line%][%name%]',
+            ),
+            'file' => array(
+                'class' => '\Logging\Appenders\FileAppender',
+                'levels' => 'ALL',
+                'prefix' => '[%datetime%][%level%][%pid%][%file%][%function%@%line%][%name%]',
+                'param' => array(
+                    'filename' => '/tmp/%today%.log',
+                ),
+            ),
+            'cli' => array(
+                'class' => '\Logging\Appenders\CliAppender',
+                'levels' => 'ALL',
+                'prefix' => '[%datetime%][%level%][%pid%][%file%][%function%@%line%][%name%]',
+            ),
+        ),
+    );
+    \Logging\LoggersManager::configure($configuration);
+    \Logging\LoggersManager::get('root')->emergency("I'm using logger named root");
+    \Logging\LoggersManager::get('cli')->emergency("I'm using logger named cli");
+    \Logging\LoggersManager::get('stdout')->emergency("I'm using logger named stdout");
+    \Logging\LoggersManager::get(')->emergency("By default i'm using logger named root");
+
+    $appender = new \Logging\Appenders\CliAppender('my-appender', 'DEBUG,NOTICE,INFO,WARNING,ERROR,ALERT,CRITICAL,EMERGENCY', $prefix);
+    $logger = new \Logging\Logger('new-root-logger', array($appender));
+
+    \Logging\LoggersManager::add($logger);
+    \Logging\LoggersManager::get('new-root-logger')->debug("I'm using logger named new-root-logger");
+        
+    \Logging\LoggersManager::add($logger, 'root');
+    \Logging\LoggersManager::get('root')->emergency("override logger named root");
 ```

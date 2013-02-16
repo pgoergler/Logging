@@ -19,7 +19,7 @@ abstract class DefaultAppender extends \Logging\Appender
         return $prefix . $text . $ender;
     }
 
-    public function parse($variable)
+    public function parse($variable, $context)
     {
         if (is_null($variable))
         {
@@ -71,6 +71,10 @@ abstract class DefaultAppender extends \Logging\Appender
             {
                 $lines[] = $variable->getMessage();
             }
+        } elseif (is_string($variable))
+        {
+            $message = $this->interpolate($variable, $context);
+            $lines = explode("\n", $message);
         } else
         {
             $lines = explode("\n", print_r($variable, true));

@@ -126,7 +126,7 @@ abstract class Appender
         $this->set('function', isset($stackTrace[1]) ? $stackTrace[1]['function'] : '');
         $this->set('line', $stackTrace[0]['line']);
 
-        $lines = $this->parse($this->interpolate($message, $context));
+        $lines = $this->parse($message, $context);
         $prefix = $this->prefix($level);
         $toLog = '';
 
@@ -140,7 +140,7 @@ abstract class Appender
 
     public abstract function format($prefix, $level, $nLine, $text);
 
-    public abstract function parse($variable);
+    public abstract function parse($message, $context);
 
     public abstract function prefix($level);
 

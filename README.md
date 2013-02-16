@@ -25,7 +25,7 @@ Usage
     $logger->alert("echo \\{foo\\} = {foo}", array('foo' => 123));
     $logger->emergency("echo \\{foo\\} = {foo}", array('foo' => 123));
 ?>
-``
+```
 
 
 This will output:

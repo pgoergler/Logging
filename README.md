@@ -52,7 +52,7 @@ This will output:
 
 ```
 
-LoggerManager
+LoggersManager
 -----
 
 It a container of Loggers

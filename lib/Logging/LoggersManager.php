@@ -10,67 +10,100 @@ namespace Logging;
 class LoggersManager
 {
 
-    protected static $loggers = array();
-    protected static $appenders = array();
+    protected $loggers = array();
+    protected $appenders = array();
+    protected static $_instance = null;
+    protected $loggerClass = '\Logging\Logger';
 
-    public static function add(Logger $logger = null, $name = null)
+    /**
+     *
+     * @return LoggersManager
+     */
+    public static function getInstance()
+    {
+        if (is_null(static::$_instance))
+        {
+            static::$_instance = new LoggersManager();
+        }
+        return static::$_instance;
+    }
+
+    protected function __construct()
+    {
+
+    }
+
+    public function add(Logger $logger = null, $name = null)
     {
         $name = $name ? : $logger->getName();
-        static::$loggers[$name] = $logger;
+        $this->loggers[$name] = $logger;
     }
 
     /**
      *
-     * @return \Logging\Logger
+     * @return \Psr\Log\LoggerInterface
      */
-    public static function get($name = 'root')
+    public function get($name = 'root')
     {
-        if (!isset(static::$loggers[$name]) || is_null(static::$loggers[$name]))
+        if (!isset($this->loggers[$name]) || is_null($this->loggers[$name]))
         {
             throw new \RuntimeException("No logger [$name] configured.");
         }
 
-        return static::$loggers[$name];
+        return $this->loggers[$name];
     }
 
-    public static function configure(array $configuration)
+    public function setLoggerClass($classname)
+    {
+        $this->loggerClass = $classname;
+    }
+
+    public function configure(array $configuration)
     {
         foreach ($configuration['appenders'] as $name => $config)
         {
-            static::configureAppenders($name, $config);
+            $this->configureAppenders($name, $config);
         }
 
         foreach ($configuration['loggers'] as $name => $config)
         {
-            $logger = static::configureLogger($name, $config);
-            static::$loggers[$name] = $logger;
+            $logger = $this->configureLogger($name, $config);
+            $this->loggers[$name] = $logger;
         }
 
-        if (!isset(static::$loggers['root']))
+        if (!isset($this->loggers['root']))
         {
             throw new \Exception('Logger [root] must be configured');
         }
     }
 
-    protected static function configureLogger($name, array $configuration)
+    /**
+     *
+     * @param array $name
+     * @param array $configuration
+     * @return \Psr\Log\LoggerInterface
+     * @throws \Exception
+     */
+    protected function configureLogger($name, array $configuration)
     {
-        $logger = new Logger($name);
+        $class = $this->loggerClass;
+        $logger = new $class($name);
 
         foreach ($configuration['appenders'] as $name)
         {
-            if (!isset(static::$appenders[$name]))
+            if (!isset($this->appenders[$name]))
             {
                 throw new \Exception('Appender ' . $name . ' not found.');
             }
-            $logger->addAppender($name, static::$appenders[$name]);
+            $logger->addAppender($name, $this->appenders[$name]);
         }
         return $logger;
     }
 
-    protected static function configureAppenders($name, array $configuration)
+    protected function configureAppenders($name, array $configuration)
     {
         extract($configuration);
-        static::$appenders[$name] = new $class($name, $levels, $prefix, isset($param) ? $param : array());
+        $this->appenders[$name] = new $class($name, $levels, $prefix, isset($param) ? $param : array());
     }
 
 }

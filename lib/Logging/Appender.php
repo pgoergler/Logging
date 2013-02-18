@@ -16,7 +16,7 @@ abstract class Appender
     protected $prefix = '';
     public static $defaultPrefix = '[%datetime%][%level%][%file%][%function%@%line%]';
 
-    public function __construct($name, $levels, $prefix, array $configuration = array())
+    public function __construct($name, $levels, $prefix = null, array $configuration = array())
     {
         $this->setName($name);
         $this->setLevels($levels);

@@ -47,10 +47,23 @@ class LoggersManager
     {
         if (!isset($this->loggers[$name]) || is_null($this->loggers[$name]))
         {
+            if( $name == 'root')
+            {
+                $logger = $this->makeLogger('root');
+                $logger->addAppender('root', $this->getDefaultAppender());
+                $logger->debug(new \Exception("No logger [$name] configured."));
+                return $logger;
+            }
+
             throw new \RuntimeException("No logger [$name] configured.");
         }
 
         return $this->loggers[$name];
+    }
+
+    protected function getDefaultAppender()
+    {
+        return new \Logging\Appenders\EchoAppender('DefaultAppender', 'ALL');
     }
 
     public function setLoggerClass($classname)
@@ -86,8 +99,7 @@ class LoggersManager
      */
     protected function configureLogger($name, array $configuration)
     {
-        $class = $this->loggerClass;
-        $logger = new $class($name);
+        $logger = $this->makeLogger($name);
 
         foreach ($configuration['appenders'] as $name)
         {
@@ -106,6 +118,16 @@ class LoggersManager
         $this->appenders[$name] = new $class($name, $levels, $prefix, isset($param) ? $param : array());
     }
 
+    /**
+     *
+     * @param type $name
+     * @return \Psr\Log\LoggerInterface
+     */
+    protected function makeLogger($name = 'root')
+    {
+        $class = $this->loggerClass;
+        return new $class($name);
+    }
 }
 
 ?>

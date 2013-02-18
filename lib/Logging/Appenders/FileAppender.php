@@ -25,7 +25,7 @@ class FileAppender extends DefaultAppender
         {
             $this->file = $configuration;
         }
-        
+
         $this->set('today', date('Ymd'));
     }
 
@@ -50,6 +50,7 @@ class FileAppender extends DefaultAppender
             return true;
         }
 
+        echo "ERROR $filename not exists or you dont have permissions\n";
         echo $string;
         return false;
     }

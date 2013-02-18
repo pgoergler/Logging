@@ -14,6 +14,7 @@ class LoggersManager
     protected $appenders = array();
     protected static $_instance = null;
     protected $loggerClass = '\Logging\Logger';
+    protected $defaultVars = array();
 
     /**
      *
@@ -61,6 +62,11 @@ class LoggersManager
         return $this->loggers[$name];
     }
 
+    public function set($variable, $value)
+    {
+        $this->defaultVars[$variable] = $value;
+    }
+
     protected function getDefaultAppender()
     {
         return new \Logging\Appenders\EchoAppender('DefaultAppender', 'ALL');
@@ -81,6 +87,10 @@ class LoggersManager
         foreach ($configuration['loggers'] as $name => $config)
         {
             $logger = $this->configureLogger($name, $config);
+            foreach ($this->defaultVars as $variable => $value)
+            {
+                $logger->set($variable, $value);
+            }
             $this->loggers[$name] = $logger;
         }
 
@@ -94,7 +104,7 @@ class LoggersManager
      *
      * @param array $name
      * @param array $configuration
-     * @return \Psr\Log\LoggerInterface
+     * @return \Logging\Logger
      * @throws \Exception
      */
     protected function configureLogger($name, array $configuration)

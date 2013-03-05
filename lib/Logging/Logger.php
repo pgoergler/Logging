@@ -45,8 +45,15 @@ class Logger extends \Psr\Log\AbstractLogger
 
     public function log($level, $message, array $context = array())
     {
-        $stackTrace = debug_backtrace();
-        array_shift($stackTrace);
+        if( isset($context['debug_backtrace']) )
+        {
+            $stackTrace = $context['debug_backtrace'];
+        }
+        else
+        {
+            $stackTrace = debug_backtrace();
+            array_shift($stackTrace);
+        }
         $this->set('file', basename($stackTrace[0]['file']));
         $this->set('function', isset($stackTrace[1]) ? $stackTrace[1]['function'] : '');
         $this->set('line', $stackTrace[0]['line']);

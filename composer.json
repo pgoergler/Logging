@@ -2,7 +2,7 @@
     "name": "logging/logging",
     "description":  "Logger for PHP (PSR-3)",
     "keywords": ["php", "logging", "PSR-3", "logger", "log"],
-    "homepage": "http://",
+    "homepage": "https://github.com/pgoergler/Logging",
     "license":  "MIT",
     "authors":  [ 
         { 

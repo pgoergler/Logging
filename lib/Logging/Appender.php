@@ -84,7 +84,7 @@ abstract class Appender
         $replace = array();
         foreach ($context as $key => $val)
         {
-            $replace['{' . $key . '}'] = $val;
+            $replace['{' . $key . '}'] = $this->flattern($val, 3);
         }
 
         $message = str_replace('\\{', '${__accolade__}', $message);
@@ -94,6 +94,65 @@ abstract class Appender
 
         // interpolate replacement values into the message and return
         return strtr($message, $replace);
+    }
+
+    public function flattern($item, $level = 0)
+    {
+        if (is_null($item))
+        {
+            return 'null';
+        } elseif($item instanceof \DateTime)
+        {
+            return "\\datetime('" . $item->format('Y-m-d H:i:s') . "')";
+        } elseif($item instanceof \DateInterval)
+        {
+            return "\\dateinterval('" . $item->format('P%yY%mM%dDT%hH%iI%sS') . "')";
+        } elseif (is_numeric($item))
+        {
+            return $item;
+        } elseif (is_string($item))
+        {
+            return "'$item'";
+        } elseif (is_bool($item))
+        {
+            return $item ? 'true' : 'false';
+        } elseif ($item instanceof \Closure)
+        {
+            return '{closure}';
+        } elseif (is_object($item))
+        {
+            if( method_exists($item, 'toArray') )
+            {
+                return $this->flattern($item->toArray(), $level - 1);
+            }
+            return get_class($item);
+        } elseif (is_array($item))
+        {
+            if ($level > 0)
+            {
+                $self = &$this;
+
+                $values = array();
+                $iterator = 0;
+                array_walk($item, function($value, $key) use(&$values, &$self, $level, &$iterator)
+                        {
+                            $sK = '';
+                            if (!is_numeric($key) || $key != $iterator++)
+                            {
+                                $sK = is_numeric($key) ? $key : "'$key'";
+                                $sK .= ' => ';
+                            }
+                            $values[] = $sK . $self->flattern($value, $level-1);
+                        });
+
+                return 'array(' . implode(', ', $values) . ')';
+            } else
+            {
+                return 'array';
+            }
+        } else {
+            return "\raw($item)";
+        }
     }
 
     protected function makeDefaultsVars()

@@ -83,47 +83,6 @@ abstract class DefaultAppender extends \Logging\Appender
         return $lines;
     }
 
-    public function flattern($item, $level = 0)
-    {
-        if (is_string($item))
-        {
-            return "'$item'";
-        } elseif (is_bool($item))
-        {
-            return $item ? 'true' : 'false';
-        } elseif ($item instanceof \Closure)
-        {
-            return '{closure}';
-        } elseif (is_object($item))
-        {
-            return get_class($item);
-        } elseif (is_array($item))
-        {
-            if ($level > 0)
-            {
-                $self = &$this;
-
-                $values = array();
-                $iterator = 0;
-                array_walk($item, function($value, $key) use(&$values, &$self, $level, &$iterator)
-                        {
-                            $sK = '';
-                            if (!is_numeric($key) || $key != $iterator++)
-                            {
-                                $sK = is_numeric($key) ? $key : "'$key'";
-                                $sK .= ' => ';
-                            }
-                            $values[] = $sK . $self->flattern($value, $level - 1);
-                        });
-
-                return 'array(' . implode(', ', $values) . ')';
-            } else
-            {
-                return 'array';
-            }
-        }
-    }
-
     public function prefix($level)
     {
         list($usec, $sec) = explode(" ", microtime());

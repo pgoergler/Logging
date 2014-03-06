@@ -119,6 +119,9 @@ abstract class Appender
         } elseif ($item instanceof \Closure)
         {
             return '{closure}';
+        } elseif (is_resource($item))
+        {
+            return '' . $item;
         } elseif (is_object($item))
         {
             if( method_exists($item, 'toArray') )

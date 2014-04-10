@@ -7,7 +7,7 @@ namespace Logging\Appenders;
  *
  * @author paul
  */
-class FileAppender extends DefaultAppender
+class FileAppender extends EchoAppender
 {
 
     protected $file;
@@ -50,8 +50,8 @@ class FileAppender extends DefaultAppender
             return true;
         }
 
-        echo "ERROR $filename not exists or you dont have permissions\n";
-        echo $string;
+        parent::write("ERROR $filename not exists or you dont have permissions\n");
+        parent::write($string);
         return false;
     }
 

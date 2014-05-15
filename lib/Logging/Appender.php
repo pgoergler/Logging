@@ -128,7 +128,8 @@ abstract class Appender
             {
                 return $this->flattern($item->toArray(), $level - 1);
             }
-            return get_class($item);
+            $flat = $this->flattern(get_object_vars($item), $level - 1);
+            return preg_replace('#^array\((.*)\)$#', get_class($item) . '{\1}', $flat);
         } elseif (is_array($item))
         {
             if ($level > 0)

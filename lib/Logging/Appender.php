@@ -80,83 +80,12 @@ abstract class Appender
      */
     protected function interpolate($message, array $context = array())
     {
-        // build a replacement array with braces around the context keys
-        $replace = array();
-        foreach ($context as $key => $val)
-        {
-            $replace['{' . $key . '}'] = $this->flattern($val, 3);
-        }
-
-        $message = str_replace('\\{', '${__accolade__}', $message);
-        $message = str_replace('\\}', '{__accolade__}$', $message);
-        $replace['${__accolade__}'] = '{';
-        $replace['{__accolade__}$'] = '}';
-
-        // interpolate replacement values into the message and return
-        return strtr($message, $replace);
+        return LoggersManager::getInstance()->interpolate($message, $context);
     }
 
     public function flattern($item, $level = 0)
     {
-        if (is_null($item))
-        {
-            return 'null';
-        } elseif($item instanceof \DateTime)
-        {
-            return "\\datetime('" . $item->format('Y-m-d H:i:s') . "')";
-        } elseif($item instanceof \DateInterval)
-        {
-            return "\\dateinterval('" . $item->format('P%yY%mM%dDT%hH%iI%sS') . "')";
-        } elseif (is_numeric($item))
-        {
-            return $item;
-        } elseif (is_string($item))
-        {
-            return "'$item'";
-        } elseif (is_bool($item))
-        {
-            return $item ? 'true' : 'false';
-        } elseif ($item instanceof \Closure)
-        {
-            return '{closure}';
-        } elseif (is_resource($item))
-        {
-            return '' . $item;
-        } elseif (is_object($item))
-        {
-            if( method_exists($item, 'toArray') )
-            {
-                return $this->flattern($item->toArray(), $level - 1);
-            }
-            $flat = $this->flattern(get_object_vars($item), $level - 1);
-            return preg_replace('#^array\((.*)\)$#', get_class($item) . '{\1}', $flat);
-        } elseif (is_array($item))
-        {
-            if ($level > 0)
-            {
-                $self = &$this;
-
-                $values = array();
-                $iterator = 0;
-                array_walk($item, function($value, $key) use(&$values, &$self, $level, &$iterator)
-                        {
-                            $sK = '';
-                            if (!is_numeric($key) || $key != $iterator++)
-                            {
-                                $sK = is_numeric($key) ? $key : "'$key'";
-                                $sK .= ' => ';
-                            }
-                            $values[] = $sK . $self->flattern($value, $level-1);
-                        });
-
-                return 'array(' . implode(', ', $values) . ')';
-            } else
-            {
-                return 'array';
-            }
-        } else {
-            return "\raw($item)";
-        }
+        return LoggersManager::getInstance()->flattern($item, $level);
     }
 
     protected function makeDefaultsVars()

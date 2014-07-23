@@ -45,9 +45,21 @@ class FileAppender extends EchoAppender
 
         if ($file)
         {
-            fputs($file, $string);
-            fclose($file);
-            return true;
+            $waitForLock = true;
+            if( flock($file, LOCK_EX, $waitForLock) )
+            {
+                fputs($file, $string);
+                fflush($file);
+                flock($file, LOCK_UN);
+                fclose($file);
+                return true;
+            }
+            else
+            {
+                fclose($file);
+                parent::write("ERROR $filename lock failed\n");
+                parent::write($string);
+            }
         }
 
         parent::write("ERROR $filename not exists or you dont have permissions\n");

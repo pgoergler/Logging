@@ -62,6 +62,11 @@ class LoggersManager
         return $this->loggers[$name];
     }
 
+    public function has($name)
+    {
+        return isset($this->loggers[$name]) && !is_null($this->loggers[$name]);
+    }
+    
     public function set($variable, $value)
     {
         $this->defaultVars[$variable] = $value;

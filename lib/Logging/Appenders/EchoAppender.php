@@ -13,25 +13,19 @@ class EchoAppender extends DefaultAppender
     {
         $obLevel = ob_get_level();
         $contents = array();
-        $fd = fopen('logger.lock', 'w+');
-        if( $fd && flock($fd, LOCK_EX) )
+        
+        for( $i = 0; $i < $obLevel; $i++ )
         {
-
-            for( $i = 0; $i < $obLevel; $i++ )
-            {
-                $contents[] = ob_get_clean();
-            }
-
-            echo $message;
-
-            for( $i = $obLevel; $i > 0; $i-- )
-            {
-                ob_start();
-                echo $contents[$i- 1];
-            }
+            $contents[] = ob_get_clean();
         }
-        flock($fd, LOCK_UN);
-        fclose($fd);
+
+        echo $message;
+
+        for( $i = $obLevel; $i > 0; $i-- )
+        {
+            ob_start();
+            echo $contents[$i- 1];
+        }
     }
 }
 

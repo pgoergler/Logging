@@ -94,7 +94,8 @@ abstract class Appender
         {
             $arr = explode(' ', $_SERVER['SSH_CLIENT']);
             $this->set('client_ip', (isset($_SERVER['USER']) ? $_SERVER['USER'] : 'unknown') . '@' . $arr[0] . ':' . $arr[2]);
-            $this->set('client_useragent', $_SERVER['TERM']);
+            $term = isset($_SERVER['TERM']) ? $_SERVER['TERM'] : (isset($_SERVER['SSH_TTY']) ? $_SERVER['SSH_TTY'] : 'unknown');
+            $this->set('client_useragent', $term);
         } else if (isset($_SERVER['TERM']))
         {
             $this->set('client_ip', (isset($_SERVER['USER']) ? $_SERVER['USER'] : 'unknown') . '@localhost');

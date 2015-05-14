@@ -25,6 +25,8 @@ Usage
     $logger->critical("echo \\{foo\\} = {foo}", array('foo' => 123));
     $logger->alert("echo \\{foo\\} = {foo}", array('foo' => 123));
     $logger->emergency("echo \\{foo\\} = {foo}", array('foo' => 123));
+    
+    $logger->debug("echo first var = {}", array(123));
 
     $logger->debug("My multilines text :\nline 1\nline 2");
 ?>
@@ -49,6 +51,7 @@ This will output:
 [2013-02-16 15:41:48,144][test 2][    DEBUG][TestTask.php][testLogging@52][30575][paul@localhost][xterm-color]My multilines text :
 [2013-02-16 15:41:48,144][test 2][    DEBUG][TestTask.php][testLogging@52][30575][paul@localhost][xterm-color]line 1
 [2013-02-16 15:41:48,144][test 2][    DEBUG][TestTask.php][testLogging@52][30575][paul@localhost][xterm-color]line 2
+[2013-02-16 15:41:48,144][test 2][    DEBUG][TestTask.php][testLogging@54][30575][paul@localhost][xterm-color]echo first var = 123
 
 ```
 

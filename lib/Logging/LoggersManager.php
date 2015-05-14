@@ -158,6 +158,19 @@ class LoggersManager
 
         $message = str_replace('\\{', '${__accolade__}', $message);
         $message = str_replace('\\}', '{__accolade__}$', $message);
+        
+        /**
+         * replace first {} with {0}
+         * replace second {} with {1}
+         * etc...
+         */
+        
+        $index = 0;
+        $c = function($matches) use(&$index) { 
+            return '{' . $index++ .'}'; 
+        };
+        $message = preg_replace_callback('#\{\}#', $c, $message);
+        
         $replace['${__accolade__}'] = '{';
         $replace['{__accolade__}$'] = '}';
 
@@ -172,7 +185,7 @@ class LoggersManager
             return 'null';
         } elseif($item instanceof \DateTime)
         {
-            return "\\datetime('" . $item->format('Y-m-d H:i:s') . "')";
+            return "\\datetime('" . $item->format('Y-m-d H:i:sP') . "')";
         } elseif($item instanceof \DateInterval)
         {
             return "\\dateinterval('" . $item->format('P%yY%mM%dDT%hH%iI%sS') . "')";

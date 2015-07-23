@@ -153,7 +153,7 @@ class LoggersManager
         $replace = array();
         foreach ($context as $key => $val)
         {
-            $replace['{' . $key . '}'] = $this->flattern($val, 3);
+            $replace['{' . $key . '}'] = \dump_flat($val, 1);
         }
 
         $message = str_replace('\\{', '${__accolade__}', $message);
@@ -165,9 +165,14 @@ class LoggersManager
          * etc...
          */
         $index = 0;
-        $c = function($matches) use(&$index)
+        $contextKeys = array_keys($context);
+        $c = function($matches) use(&$index, &$contextKeys)
         {
-            return '{' . $index++ . '}';
+            if(array_key_exists($index, $contextKeys))
+            {
+                return '{' . ($contextKeys[$index++]) . '}';
+            }
+            return $matches[0];
         };
         $message = preg_replace_callback('#\{\}#', $c, $message);
 
@@ -176,70 +181,6 @@ class LoggersManager
 
         // interpolate replacement values into the message and return
         return strtr($message, $replace);
-    }
-
-    public function flattern($item, $level = 0)
-    {
-        if (is_null($item))
-        {
-            return 'null';
-        } elseif ($item instanceof \DateTime)
-        {
-            return "\\datetime('" . $item->format('Y-m-d H:i:sP') . "')";
-        } elseif ($item instanceof \DateInterval)
-        {
-            return "\\dateinterval('" . $item->format('P%yY%mM%dDT%hH%iI%sS') . "')";
-        } elseif (is_numeric($item))
-        {
-            return $item;
-        } elseif (is_string($item))
-        {
-            return "'$item'";
-        } elseif (is_bool($item))
-        {
-            return $item ? 'true' : 'false';
-        } elseif ($item instanceof \Closure)
-        {
-            return '{closure}';
-        } elseif (is_resource($item))
-        {
-            return '' . $item;
-        } elseif (is_object($item))
-        {
-            if (method_exists($item, 'toArray'))
-            {
-                return $this->flattern($item->toArray(), $level - 1);
-            }
-            $flat = $this->flattern(get_object_vars($item), $level - 1);
-            return preg_replace('#^array\((.*)\)$#', get_class($item) . '{\1}', $flat);
-        } elseif (is_array($item))
-        {
-            if ($level > 0)
-            {
-                $self = &$this;
-
-                $values = array();
-                $iterator = 0;
-                array_walk($item, function($value, $key) use(&$values, &$self, $level, &$iterator)
-                {
-                    $sK = '';
-                    if (!is_numeric($key) || $key != $iterator++)
-                    {
-                        $sK = is_numeric($key) ? $key : "'$key'";
-                        $sK .= ' => ';
-                    }
-                    $values[] = $sK . $self->flattern($value, $level - 1);
-                });
-
-                return 'array(' . implode(', ', $values) . ')';
-            } else
-            {
-                return 'array';
-            }
-        } else
-        {
-            return "\raw($item)";
-        }
     }
 
     public function prettydump($variable, $context)
@@ -258,7 +199,8 @@ class LoggersManager
             $lines = array($variable);
         } elseif (is_string($variable))
         {
-            $lines = array("$variable");
+            $message = $this->interpolate($variable, $context);
+            $lines = explode("\n", $message);
         } elseif (is_bool($variable))
         {
             $lines = array($variable ? 'true' : 'false');
@@ -312,7 +254,7 @@ class LoggersManager
                     foreach ($trace['args'] as $args)
                     {
 
-                        $str .= ($first ? '' : ', ') . $this->flattern($args, 1);
+                        $str .= ($first ? '' : ', ') . \dump_flat($args, 1);
                         $first = false;
                     }
 

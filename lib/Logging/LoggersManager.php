@@ -31,7 +31,7 @@ class LoggersManager
 
     protected function __construct()
     {
-
+        
     }
 
     public function add(Logger $logger = null, $name = null)
@@ -48,7 +48,7 @@ class LoggersManager
     {
         if (!isset($this->loggers[$name]) || is_null($this->loggers[$name]))
         {
-            if( $name == 'root')
+            if ($name == 'root')
             {
                 $logger = $this->makeLogger('root');
                 $logger->addAppender('root', $this->getDefaultAppender());
@@ -66,7 +66,7 @@ class LoggersManager
     {
         return isset($this->loggers[$name]) && !is_null($this->loggers[$name]);
     }
-    
+
     public function set($variable, $value)
     {
         $this->defaultVars[$variable] = $value;
@@ -143,7 +143,7 @@ class LoggersManager
         $class = $this->loggerClass;
         return new $class($name);
     }
-    
+
     /**
      * Interpolates context values into the message placeholders.
      */
@@ -158,35 +158,35 @@ class LoggersManager
 
         $message = str_replace('\\{', '${__accolade__}', $message);
         $message = str_replace('\\}', '{__accolade__}$', $message);
-        
+
         /**
          * replace first {} with {0}
          * replace second {} with {1}
          * etc...
          */
-        
         $index = 0;
-        $c = function($matches) use(&$index) { 
-            return '{' . $index++ .'}'; 
+        $c = function($matches) use(&$index)
+        {
+            return '{' . $index++ . '}';
         };
         $message = preg_replace_callback('#\{\}#', $c, $message);
-        
+
         $replace['${__accolade__}'] = '{';
         $replace['{__accolade__}$'] = '}';
 
         // interpolate replacement values into the message and return
         return strtr($message, $replace);
     }
-    
+
     public function flattern($item, $level = 0)
     {
         if (is_null($item))
         {
             return 'null';
-        } elseif($item instanceof \DateTime)
+        } elseif ($item instanceof \DateTime)
         {
             return "\\datetime('" . $item->format('Y-m-d H:i:sP') . "')";
-        } elseif($item instanceof \DateInterval)
+        } elseif ($item instanceof \DateInterval)
         {
             return "\\dateinterval('" . $item->format('P%yY%mM%dDT%hH%iI%sS') . "')";
         } elseif (is_numeric($item))
@@ -206,7 +206,7 @@ class LoggersManager
             return '' . $item;
         } elseif (is_object($item))
         {
-            if( method_exists($item, 'toArray') )
+            if (method_exists($item, 'toArray'))
             {
                 return $this->flattern($item->toArray(), $level - 1);
             }
@@ -221,40 +221,69 @@ class LoggersManager
                 $values = array();
                 $iterator = 0;
                 array_walk($item, function($value, $key) use(&$values, &$self, $level, &$iterator)
-                        {
-                            $sK = '';
-                            if (!is_numeric($key) || $key != $iterator++)
-                            {
-                                $sK = is_numeric($key) ? $key : "'$key'";
-                                $sK .= ' => ';
-                            }
-                            $values[] = $sK . $self->flattern($value, $level-1);
-                        });
+                {
+                    $sK = '';
+                    if (!is_numeric($key) || $key != $iterator++)
+                    {
+                        $sK = is_numeric($key) ? $key : "'$key'";
+                        $sK .= ' => ';
+                    }
+                    $values[] = $sK . $self->flattern($value, $level - 1);
+                });
 
                 return 'array(' . implode(', ', $values) . ')';
             } else
             {
                 return 'array';
             }
-        } else {
+        } else
+        {
             return "\raw($item)";
         }
     }
-    
+
     public function prettydump($variable, $context)
     {
         if (is_null($variable))
         {
             $lines = array('null');
-        } else if (is_bool($variable))
+        } elseif ($variable instanceof \DateTime)
+        {
+            $lines = array("\\datetime('" . $variable->format('Y-m-d H:i:sP') . "')");
+        } elseif ($variable instanceof \DateInterval)
+        {
+            $lines = array("\\dateinterval('" . $variable->format('P%yY%mM%dDT%hH%iI%sS') . "')");
+        } elseif (is_numeric($variable))
+        {
+            $lines = array($variable);
+        } elseif (is_string($variable))
+        {
+            $lines = array("$variable");
+        } elseif (is_bool($variable))
         {
             $lines = array($variable ? 'true' : 'false');
+        } elseif ($variable instanceof \Closure)
+        {
+            $lines = array('{closure}');
+        } elseif (is_resource($variable))
+        {
+            $lines = array("$variable");
         } else if ($variable instanceof \Exception)
         {
-            $lines = array();
             $traces = $variable->getTrace();
-            $lines[] = 'Exception ' . get_class($variable) . ' throwed in file ' . $variable->getFile() . ' on line ' . $variable->getLine();
+            $lines = array();
+            $lines[] = "\\" . get_class($variable) . '() throwed in file ' . $variable->getFile() . ' on line ' . $variable->getLine();
             $lines[] = 'With message : ' . $variable->getMessage();
+
+            if (method_exists($variable, 'toArray'))
+            {
+                $lines[] = "With values : ";
+                $dumpr = explode("\n", \dump_r($variable->toArray()));
+                foreach ($dumpr as $row)
+                {
+                    $lines[] = $row;
+                }
+            }
 
             if (count($traces))
             {
@@ -293,17 +322,13 @@ class LoggersManager
             {
                 $lines[] = $variable->getMessage();
             }
-        } elseif (is_string($variable))
-        {
-            $message = $this->interpolate($variable, $context);
-            $lines = explode("\n", $message);
         } else
         {
-            $lines = explode("\n", print_r($variable, true));
+            $lines = explode("\n", \dump_r($variable));
         }
+
         unset($variable);
         return $lines;
     }
-}
 
-?>
+}

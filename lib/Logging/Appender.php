@@ -115,9 +115,6 @@ abstract class Appender
         }
 
         $this->set('pid', (string) getmypid());
-        $this->set('file', basename($stackTrace[0]['file']));
-        $this->set('function', isset($stackTrace[1]) ? $stackTrace[1]['function'] : '');
-        $this->set('line', $stackTrace[0]['line']);
 
         $lines = $this->parse($message, $context);
         $prefix = $this->prefix($level);

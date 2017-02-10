@@ -51,12 +51,24 @@ class Logger extends \Psr\Log\AbstractLogger
         }
         else
         {
-            $stackTrace = debug_backtrace();
-            array_shift($stackTrace);
+            $stackTrace = \debug_backtrace();
+            \array_shift($stackTrace);
         }
-        $this->set('file', basename($stackTrace[0]['file']));
-        $this->set('function', isset($stackTrace[1]) ? $stackTrace[1]['function'] : '');
-        $this->set('line', $stackTrace[0]['line']);
+        
+        if( empty($stackTrace) )
+        {
+            $this->set('file', 'main file');
+            $this->set('function', '');
+            $this->set('line', '?');
+        }
+        else
+        {
+            $file = isset($stackTrace[0]['file']) ? basename($stackTrace[0]['file']) : null;
+            $file = is_null($file) ? (isset($stackTrace[0]['class']) ? basename($stackTrace[0]['class']) : 'unknown file') : $file;
+            $this->set('file', $file);
+            $this->set('function', isset($stackTrace[1]) ? $stackTrace[1]['function'] : '');
+            $this->set('line', isset($stackTrace[0]['line']) ? $stackTrace[0]['line'] : '?');
+        }
 
         foreach ($this->appenders as $name => $appender)
         {

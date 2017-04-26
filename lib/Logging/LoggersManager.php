@@ -210,7 +210,7 @@ class LoggersManager
         } elseif (is_resource($variable))
         {
             $lines = array("$variable");
-        } else if ($variable instanceof \Exception)
+        } else if ($variable instanceof \Exception or $variable instanceof \Throwable)
         {
             $traces = $variable->getTrace();
             $lines = array();
@@ -273,4 +273,9 @@ class LoggersManager
         return $lines;
     }
 
+}
+
+if( !interface_exists('\Throwable') )
+{
+    interface Throwable{};
 }

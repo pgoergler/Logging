@@ -250,12 +250,15 @@ class LoggersManager
                     }
 
 
-                    $first = true;
-                    foreach ($trace['args'] as $args)
+                    if( isset($trace['args']) )
                     {
+                        $first = true;
+                        foreach ($trace['args'] as $args)
+                        {
 
-                        $str .= ($first ? '' : ', ') . \dump_flat($args, 1);
-                        $first = false;
+                            $str .= ($first ? '' : ', ') . \dump_flat($args, 1);
+                            $first = false;
+                        }
                     }
 
                     $lines[] = $str . ')';
